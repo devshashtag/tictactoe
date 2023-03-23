@@ -19,16 +19,16 @@
   --sz-container-border: 0.2rem;
   --sz-container-radius: 0.2rem;
 
-  /* block */
-  --bg-block: #181a1f;
-  --bg-block-hover: #212124;
-  --bg-block-disabled: #25252c;
-  --fg-block-x: #fa4a4a;
-  --fg-block-o: #4afad5;
-  --fg-block-win: #aefa4a;
+  /* cell */
+  --bg-cell: #181a1f;
+  --bg-cell-hover: #212124;
+  --bg-cell-disabled: #25252c;
+  --fg-cell-x: #fa4a4a;
+  --fg-cell-o: #4afad5;
+  --fg-cell-win: #aefa4a;
 
-  --fg-block-x-shadow: #fd7070;
-  --fg-block-o-shadow: #62fddc;
+  --fg-cell-x-shadow: #fd7070;
+  --fg-cell-o-shadow: #62fddc;
 
   /* messages */
   --bg-overlay: #090e13aa;
@@ -78,18 +78,18 @@ main.tic-tac-toe .board {
   grid-gap: 1rem;
 }
 
-/* blocks */
-.board .block {
-  background-color: var(--bg-block);
+/* cells */
+.board .cell {
+  background-color: var(--bg-cell);
   font-size: 1.5em;
 }
 
-.board .block::before {
+.board .cell::before {
   width: 100%;
   height: 100%;
 
   cursor: pointer;
-  background-color: var(--bg-block-disabled);
+  background-color: var(--bg-cell-disabled);
   box-shadow: 0 0 0 var(--bg-container-border) inset;
 
   display: flex;
@@ -103,41 +103,41 @@ main.tic-tac-toe .board {
   transition: 0.3s all linear;
 }
 
-.board .block.x::before,
-.board .block.o::before {
+.board .cell.x::before,
+.board .cell.o::before {
   font-size: 1em;
   cursor: default;
 }
 
-.board .block.x::before {
+.board .cell.x::before {
   content: "x";
-  color: var(--fg-block-x);
-  text-shadow: 0 0 0.5rem var(--fg-block-x);
-  box-shadow: 0 0 0.5em var(--fg-block-x-shadow) inset;
+  color: var(--fg-cell-x);
+  text-shadow: 0 0 0.5rem var(--fg-cell-x);
+  box-shadow: 0 0 0.5em var(--fg-cell-x-shadow) inset;
 }
 
-.board .block.o::before {
+.board .cell.o::before {
   content: "o";
-  color: var(--fg-block-o);
-  text-shadow: 0 0 0.5rem var(--fg-block-o);
-  box-shadow: 0 0 0.5em var(--fg-block-o-shadow) inset;
+  color: var(--fg-cell-o);
+  text-shadow: 0 0 0.5rem var(--fg-cell-o);
+  box-shadow: 0 0 0.5em var(--fg-cell-o-shadow) inset;
 }
 
-.board.x-turn .block:hover:not(.o):not(.x)::before {
-  background-color: var(--bg-block-hover);
+.board.x-turn .cell:hover:not(.o):not(.x)::before {
+  background-color: var(--bg-cell-hover);
   content: "x";
-  color: var(--fg-block-x);
+  color: var(--fg-cell-x);
   opacity: 0.5;
 }
 
-.board.o-turn .block:hover:not(.o):not(.x)::before {
-  background-color: var(--bg-block-hover);
+.board.o-turn .cell:hover:not(.o):not(.x)::before {
+  background-color: var(--bg-cell-hover);
   content: "o";
-  color: var(--fg-block-o);
+  color: var(--fg-cell-o);
   opacity: 0.5;
 }
 
-.board .block.win::before {
+.board .cell.win::before {
   font-size: 1.5em;
   border-radius: 1em;
 }
