@@ -1,106 +1,71 @@
 import Board from "./board.js";
 
-import { WIN_MATCH, BOARD_SIZE, INIT_TURN, CLASS_NAMES } from "./settings.js";
+import { CELLS, CLASS_NAMES, WIN_MATCH_CELLS } from "./settings.js";
 
 function Game() {
-  this.initTurn = INIT_TURN;
+  // cells-turn group position
+  this.cellGroups = {
+    row: { x: {}, o: {} },
+    col: { x: {}, o: {} },
+  };
 
   this.init = function () {
-    // board blocks turn with index
-    this.boardGroups = {
-      row: {
-        x: {},
-        o: {},
-      },
-      col: {
-        x: {},
-        o: {},
-      },
-    };
-
-    // board
+    // board init
     this.board = new Board();
-    this.board.init(this.initTurn);
+    this.board.init();
 
     // game start
     this.start();
   };
 
   this.start = function () {
-    const board = this.board.elements.board;
-
-    board.addEventListener("click", this.main);
+    this.board.elements.board.addEventListener("click", this.main);
+    this.board.setTurn(this.board.initTurn);
   };
 
   this.stop = function () {
-    const board = this.board.elements.board;
-    board.removeEventListener("click", this.main);
-
-    this.board.noTurn();
+    this.board.elements.board.removeEventListener("click", this.main);
+    this.board.removeTurn();
   };
 
   this.main = (event) => {
-    // clicked block
-    const block = event.target;
+    // clicked cell
+    const cell = event.target;
 
-    // if a block has turns class ignore it
-    const blockTurns = Object.values(CLASS_NAMES.blockTurns);
+    // if a cell has cell type ignore it
+    const cellTypes = Object.values(CLASS_NAMES.cellTypes);
 
-    for (const turn of blockTurns) {
-      if (block.classList.contains(turn)) return;
+    for (const type of cellTypes) {
+      if (cell.classList.contains(type)) return;
     }
 
-    // set current turn to clicked block
-    this.board.setBlockTurn(block);
+    // set current turn to clicked cell
+    this.board.setCellTurn(cell);
 
-    // save block turn in this.turns
-    this.saveBlockTurn(block);
+    // save cell turn in this.cellGroups
+    this.saveCell(cell);
 
-    // next player turn
-    this.board.changeTurn();
+    // board next turn
+    this.board.toggleTurns();
 
     // check win
     this.checkWin();
   };
 
-  this.saveBlockTurn = function (block) {
-    const index = this.board.blocks.indexOf(block);
-    const y = Math.floor(index / BOARD_SIZE);
-    const x = index - y * BOARD_SIZE;
+  this.saveCell = function (cell) {
+    const turn = this.board.getCellTurn();
 
-    const turn = this.board.getBlockTurn();
+    const index = this.board.cells.indexOf(cell);
+    const row = Math.floor(index / CELLS);
+    const col = index - row * CELLS;
 
-    // row
-    this.boardGroups.row[turn][y] ??= [];
-    this.boardGroups.row[turn][y].push(x);
+    // row group
+    this.cellGroups.row[turn][row] ??= [];
+    this.cellGroups.row[turn][row].push(col);
 
-    // col
-    this.boardGroups.col[turn][x] ??= [];
-    this.boardGroups.col[turn][x].push(y);
-  };
-
-  this.getGroups = function () {
-    const groups = {
-      row: {},
-      col: {},
-    };
-
-    for (const key in this.turns) {
-      const [y, x] = key.split(",");
-      const turn = this.turns[key];
-
-      // row
-      groups.row[turn] = groups.row[turn] ?? {};
-      groups.row[turn][y] = groups.row[turn][y] ?? [];
-      groups.row[turn][y].push(x);
-
-      // col
-      groups.col[turn] = groups.col[turn] ?? {};
-      groups.col[turn][x] = groups.col[turn][x] ?? [];
-      groups.col[turn][x].push(y);
-    }
-
-    return groups;
+    // col group
+    this.cellGroups.col[turn][col] ??= [];
+    this.cellGroups.col[turn][col].push(row);
   };
 
   this.checkTurnsWin = function (turnValues) {
@@ -109,8 +74,8 @@ function Game() {
       // sort current row values
       values.sort((a, b) => a - b);
 
-      // skip current row if its length less than win_match
-      if (values.length < WIN_MATCH) continue;
+      // skip current row if its length less than win_match_cells
+      if (values.length < WIN_MATCH_CELLS) continue;
 
       let prev = values[0];
       let isWin = false;
@@ -121,7 +86,7 @@ function Game() {
         else if (!isWin) positions = [curr];
         else break;
 
-        if (positions.length >= WIN_MATCH) isWin = true;
+        if (positions.length >= WIN_MATCH_CELLS) isWin = true;
 
         prev = curr;
       }
@@ -130,46 +95,46 @@ function Game() {
     }
   };
 
+  this.checkisWin = function (turnValues, direction) {
+    const isWin = this.checkTurnsWin(turnValues);
+
+    if (!isWin) return;
+
+    // cell positions
+    let [index, positions] = isWin;
+
+    if (direction == "row") {
+      positions = positions.map((pos) => pos + index * CELLS);
+    } else {
+      positions = positions.map((pos) => index + pos * CELLS);
+    }
+
+    // winner player
+    const firstCell = this.board.cells[positions[0]];
+    const turn = this.board.getCellTurn(firstCell);
+
+    // add win class to cells
+    for (const x of positions) {
+      this.board.cells[x].classList.add("win");
+    }
+
+    // stop game
+    this.stop();
+    alert(`player ${turn} won`);
+  };
+
   this.checkRowWin = function () {
-    const { x, o } = this.boardGroups.row;
+    const { x, o } = this.cellGroups.row;
 
     this.checkisWin(x, "row"); // is row x win
     this.checkisWin(o, "row"); // is row o win
   };
 
   this.checkColWin = function () {
-    const { x, o } = this.boardGroups.col;
+    const { x, o } = this.cellGroups.col;
 
     this.checkisWin(x, "col"); // is row x win
     this.checkisWin(o, "col"); // is row o win
-  };
-
-  this.checkisWin = function (turnValues, direction) {
-    const isWin = this.checkTurnsWin(turnValues);
-    if (!isWin) return;
-
-    // block positions
-    let [index, positions] = isWin;
-
-    if (direction == "row") {
-      positions = positions.map((pos) => pos + index * BOARD_SIZE);
-    } else {
-      positions = positions.map((pos) => index + pos * BOARD_SIZE);
-    }
-
-    // winner player
-    const firstBlock = this.board.blocks[positions[0]];
-    const turn = this.board.getBlockTurn(firstBlock);
-
-    // add win class to blocks
-    for (const x of positions) {
-      this.board.blocks[x].classList.add("win");
-    }
-
-    // stop game
-    this.stop();
-    this.board.noTurn();
-    alert(`player ${turn} won`);
   };
 
   this.checkWin = function () {
