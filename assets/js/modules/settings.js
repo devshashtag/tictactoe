@@ -1,25 +1,28 @@
+// responsive cell size
+
+export const CELLS = 10;
+
 const isMobile = window.matchMedia("(max-width: 600px)").matches;
-
-// board [rem size]
-export const WIN_MATCH = 3;
-
-export const BOARD_SIZE = 5;
+const CELL_SIZE = isMobile ? 8 - CELLS / 2 : 10 - CELLS / 2;
 
 export const STYLES = {
   board: {
-    width: 0.1,
-    padding: 0.0,
-    radius: 0.2,
-    gap: 0.0,
+    cells: CELLS,
+    gap: "0.0rem",
+    padding: "0.0rem",
+    borderWidth: "0.1rem",
+    borderRadius: "0.2rem",
   },
 
-  block: {
-    size: isMobile ? 8 - BOARD_SIZE / 2 : 10 - BOARD_SIZE / 2,
-    radius: 0.2,
+  cell: {
+    size: CELL_SIZE + "rem",
+    borderRadius: "0.2rem",
   },
 };
 
+// class names
 export const CLASS_NAMES = {
+  // container
   container: "container",
 
   // board
@@ -29,12 +32,14 @@ export const CLASS_NAMES = {
     o: "o-turn",
   },
 
-  // block
-  block: "block",
-  blockTurns: {
+  // cell
+  cell: "cell",
+  cellTypes: {
     x: "x",
     o: "o",
   },
 };
 
+// options
+export const WIN_MATCH_CELLS = 5;
 export const INIT_TURN = CLASS_NAMES.boardTurns.x;
