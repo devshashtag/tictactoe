@@ -1,17 +1,20 @@
 // responsive cell size
 
-export const CELLS = 10;
-
 const isMobile = window.matchMedia('(max-width: 600px)').matches;
+
+// options
+export const CELLS = 10;
+export const WINNER_MATCH_CELLS = 5;
+export const INIT_PLAYER = 'x';
 const CELL_SIZE = isMobile ? 8 - CELLS / 2 : 10 - CELLS / 2;
 
 export const STYLES = {
   board: {
-    cells: CELLS,
-    gap: '0.0rem',
-    padding: '0.0rem',
+    gap: '0',
+    padding: '0',
     borderWidth: '0.1rem',
     borderRadius: '0.2rem',
+    gridTemplateColumns: `repeat(${CELLS}, 1fr)`,
   },
 
   cell: {
@@ -27,19 +30,7 @@ export const CLASS_NAMES = {
 
   // board
   board: 'board',
-  boardTurns: {
-    x: 'x-turn',
-    o: 'o-turn',
-  },
 
   // cell
   cell: 'cell',
-  cellTypes: {
-    x: 'x',
-    o: 'o',
-  },
 };
-
-// options
-export const WIN_MATCH_CELLS = 5;
-export const INIT_TURN = CLASS_NAMES.boardTurns.x;

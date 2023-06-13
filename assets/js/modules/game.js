@@ -1,225 +1,167 @@
 import Board from './board.js';
 
-import { CELLS, CLASS_NAMES, WIN_MATCH_CELLS } from './settings.js';
+import { CELLS, INIT_PLAYER, WINNER_MATCH_CELLS } from './settings.js';
 
 function Game() {
-  // cells-turn group position
-  this.cellGroups = {
-    row: { x: {}, o: {} },
-    col: { x: {}, o: {} },
-    northWest: { x: {}, o: {} },
-    northEast: { x: {}, o: {} },
-  };
-
   this.init = function () {
-    // board init
-    this.board = new Board();
-    this.board.init();
+    this.currentPlayer = INIT_PLAYER;
+    this.grid = Array.from(Array(CELLS), () => new Array(CELLS));
 
+    this.board = new Board();
+    this.board.init(this.currentPlayer);
+
+    this.isDiagonalWin();
     // game start
     this.start();
   };
 
   this.start = function () {
-    this.board.elements.board.addEventListener('click', this.main);
-    this.board.setTurn(this.board.initTurn);
+    this.board.board.addEventListener('click', this.main);
+    this.board.setTurn(this.currentPlayer);
   };
 
   this.stop = function () {
-    this.board.elements.board.removeEventListener('click', this.main);
+    this.board.board.removeEventListener('click', this.main);
     this.board.removeTurn();
   };
 
   this.main = (event) => {
-    // clicked cell
     const cell = event.target;
 
-    // skip if clicked element not a cell
-    if (!cell.classList.contains(CLASS_NAMES.cell)) return;
-
-    // if a cell has cell type ignore it
-    const cellTypes = Object.values(CLASS_NAMES.cellTypes);
-
-    for (const type of cellTypes) {
+    // ignore clicked cells
+    for (const type of ['x', 'o']) {
       if (cell.classList.contains(type)) return;
     }
 
-    // set current turn to clicked cell
-    this.board.setCellTurn(cell);
+    // set clicked cell class
+    this.board.setClassName(cell, this.currentPlayer);
 
-    // save cell turn in this.cellGroups
     this.saveCell(cell);
 
     // check win
     if (this.checkWin()) return;
 
-    // board next turn
-    this.board.toggleTurn();
+    // next player
+    this.toggleTurns();
+  };
+
+  this.toggleTurns = function () {
+    const player = this.currentPlayer;
+    const current = player === 'x' ? 'o' : 'x';
+
+    this.board.removeTurn();
+    this.board.setTurn(current);
+    this.currentPlayer = current;
   };
 
   this.saveCell = function (cell) {
-    const turn = this.board.getCellTurn();
-
     const index = this.board.cells.indexOf(cell);
     const row = Math.floor(index / CELLS);
     const col = index - row * CELLS;
 
-    const winMatches = WIN_MATCH_CELLS - 1;
+    const turn = this.currentPlayer;
 
-    const diagonalNorthWest = row + col < winMatches || row + col > CELLS * 2 - winMatches - 2;
+    this.grid[row][col] = turn;
+  };
 
-    const diagonalNorthEast = [...Array(winMatches).keys()].some((offset) => {
-      return row == col + CELLS - winMatches + offset || row == col - (CELLS - winMatches + offset);
+  this.markWinner = function (winnerIndexes) {
+    const cell = this.board.cells[winnerIndexes[0]];
+    const name = this.board.getTurn(cell);
+
+    winnerIndexes.forEach((index) => {
+      this.board.cells[index].classList.add('win');
     });
 
-    // row group
-    this.cellGroups.row[turn][row] ??= [];
-    this.cellGroups.row[turn][row].push(col);
-
-    // col group
-    this.cellGroups.col[turn][col] ??= [];
-    this.cellGroups.col[turn][col].push(row);
-
-    // diagonal
-    const diagonalRange = CELLS - winMatches;
-    const diagonalStart = -(diagonalRange - 1);
-
-    // diagonal north west \ group
-    for (let r = diagonalStart, index = 0; r < diagonalRange; r++, index++) {
-      if (row == col + r) {
-        this.cellGroups.northWest[turn][index] ??= [];
-        this.cellGroups.northWest[turn][index].push([row, col]);
-        break;
-      }
-    }
-
-    // diagonal north west / group
-    for (let r = diagonalStart, index = 0; r < diagonalRange; r++, index++) {
-      if (row + col == CELLS - 1 + r) {
-        this.cellGroups.northEast[turn][index] ??= [];
-        this.cellGroups.northEast[turn][index].push([row, col]);
-        break;
-      }
-    }
-  };
-
-  this.getMatchGroups = function (turnValues) {
-    for (const [index, values] of Object.entries(turnValues)) {
-      // sort current row values
-      values.sort((a, b) => a - b);
-
-      // skip current row if its length less than win_match_cells
-      if (values.length < WIN_MATCH_CELLS) continue;
-
-      let prev = values[0];
-      let isWin = false;
-      let positions = [];
-
-      for (const curr of values) {
-        if (prev + 1 == curr) positions.push(curr);
-        else if (!isWin) positions = [curr];
-        else break;
-
-        if (positions.length >= WIN_MATCH_CELLS) isWin = true;
-
-        prev = curr;
-      }
-
-      if (isWin) return [+index, positions];
-    }
-  };
-
-  this.checkIsWin = function (turnValues, direction) {
-    const isWin = this.getMatchGroups(turnValues);
-
-    if (!isWin) return false;
-
-    // cell positions
-    let [index, positions] = isWin;
-
-    if (direction == 'row') {
-      positions = positions.map((pos) => pos + index * CELLS);
-    } else {
-      positions = positions.map((pos) => index + pos * CELLS);
-    }
-
-    // winner player
-    const firstCell = this.board.cells[positions[0]];
-    const turn = this.board.getCellTurn(firstCell);
-
-    // add win class to cells
-    for (const x of positions) {
-      this.board.cells[x].classList.add('win');
-    }
-
     // stop game
     this.stop();
-    return true;
+    alert(`player ${name} won`);
   };
 
-  this.getDiagonalMatchGroups = function (turnValues) {
-    for (const rows of Object.values(turnValues)) {
-      // sort current row values
-      rows.sort((a, b) => a[0] - b[0]);
+  this.isRowWin = function () {
+    const rowLength = this.grid.length;
+    const colLength = this.grid[0].length;
 
-      // skip current row if its length less than win_match_cells
-      if (rows.length < WIN_MATCH_CELLS) continue;
+    for (let row = 0; row < rowLength; row++) {
+      let moves = '';
 
-      let prev = rows[0][0];
-      let isWin = false;
-      let positions = [];
+      for (let col = 0; col < colLength; col++) {
+        const current = this.grid[row][col];
 
-      for (const curr of rows) {
-        if (prev + 1 == curr[0]) positions.push(curr);
-        else if (!isWin) positions = [curr];
-        else break;
+        if (!current) {
+          moves = '';
+          continue;
+        }
 
-        if (positions.length >= WIN_MATCH_CELLS) isWin = true;
+        if (current === moves.slice(-1) || !moves) moves += current;
+        else moves = current;
 
-        prev = curr[0];
+        if (moves.length === WINNER_MATCH_CELLS) {
+          let winnerIndexes = [];
+
+          for (let i = 0; i < WINNER_MATCH_CELLS; i++) {
+            winnerIndexes.push(row * CELLS + (col - i));
+          }
+
+          this.markWinner(winnerIndexes);
+          return true;
+        }
       }
-
-      if (isWin) return positions;
     }
   };
 
-  this.checkDiagonalIsWin = function (turnValues) {
-    let positions = this.getDiagonalMatchGroups(turnValues);
+  this.isColWin = function () {
+    const rowLength = this.grid.length;
+    const colLength = this.grid[0].length;
 
-    if (!positions) return false;
+    for (let col = 0; col < colLength; col++) {
+      let moves = '';
 
-    positions = positions.map((pos) => pos[1] + pos[0] * CELLS);
+      for (let row = 0; row < rowLength; row++) {
+        const current = this.grid[row][col];
 
-    // winner player
-    const firstCell = this.board.cells[positions[0]];
-    const turn = this.board.getCellTurn(firstCell);
+        if (!current) {
+          moves = '';
+          continue;
+        }
 
-    // add win class to cells
-    for (const x of positions) {
-      this.board.cells[x].classList.add('win');
+        if (current === moves.slice(-1) || !moves) moves += current;
+        else moves = current;
+
+        if (moves.length === WINNER_MATCH_CELLS) {
+          let winnerIndexes = [];
+
+          for (let i = 0; i < WINNER_MATCH_CELLS; i++) {
+            winnerIndexes.push((row - i) * CELLS + col);
+          }
+
+          this.markWinner(winnerIndexes);
+          return true;
+        }
+      }
     }
+  };
 
-    // stop game
-    this.stop();
-    return true;
+  this.isDiagonalWin = function () {
+    const rowLength = this.grid.length;
+    const colLength = this.grid[0].length;
+    const winLength = WINNER_MATCH_CELLS;
+
+    for (let row = 0; row < rowLength; row++) {
+      for (let col = 0; col < colLength; col++) {
+        this.board.cells[row * CELLS + col].textContent = `${row + col}`;
+      }
+    }
   };
 
   this.checkWin = function () {
-    // row
-    if (this.checkIsWin(this.cellGroups.row.x, 'row')) return true;
-    if (this.checkIsWin(this.cellGroups.row.o, 'row')) return true;
-
-    // col
-    if (this.checkIsWin(this.cellGroups.col.x, 'col')) return true;
-    if (this.checkIsWin(this.cellGroups.col.o, 'col')) return true;
-
-    // diagonal north West
-    if (this.checkDiagonalIsWin(this.cellGroups.northWest.x)) return true;
-    if (this.checkDiagonalIsWin(this.cellGroups.northWest.o)) return true;
-
-    // diagonal north West
-    if (this.checkDiagonalIsWin(this.cellGroups.northEast.x)) return true;
-    if (this.checkDiagonalIsWin(this.cellGroups.northEast.o)) return true;
+    if (this.isRowWin()) return true;
+    if (this.isColWin()) return true;
+    // // diagonal north West
+    // this.check(this.cellGroups.northWest.x);
+    // this.checkDiagonalIsWin(this.cellGroups.northWest.o);
+    // // diagonal north West
+    // this.checkDiagonalIsWin(this.cellGroups.northEast.x);
+    // this.checkDiagonalIsWin(this.cellGroups.northEast.o);
   };
 }
 

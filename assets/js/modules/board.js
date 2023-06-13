@@ -1,74 +1,41 @@
-import { STYLES, CLASS_NAMES, INIT_TURN, WIN_MATCH_CELLS } from './settings.js';
+import { STYLES, CELLS } from './settings.js';
 
 function Board() {
-  this.styles = STYLES;
-  this.classes = CLASS_NAMES;
-  this.initTurn = INIT_TURN;
-  this.elements = [];
   this.cells = [];
 
-  this.init = function () {
-    // root
-    this.elements.root = document.querySelector('body > main');
-
-    // container
-    this.elements.container = this.addContainer();
+  this.init = function (initPlayer, title = 'tic tac toe') {
+    const container = document.querySelector('main > .container');
+    container.textContent = title;
 
     // board
-    this.elements.board = this.addBoard();
+    this.board = this.addElement(['board', initPlayer + '-turn'], container);
+    Object.assign(this.board.style, STYLES.board);
 
     // add board cells
     this.addCells();
   };
 
-  this.addContainer = function (parent = this.elements.root) {
-    const container = this.addElement(this.classes.container, parent);
-
-    container.textContent = 'tic tac toe';
-
-    return container;
-  };
-
-  this.addBoard = function (parent = this.elements.container) {
-    const styles = this.styles.board;
-    const board = this.addElement(this.classes.board, parent);
-
-    // board styles
-    Object.assign(board.style, {
-      gap: styles.gap,
-      padding: styles.padding,
-      borderWidth: styles.borderWidth,
-      borderRadius: styles.borderRadius,
-      gridTemplateColumns: `repeat(${styles.cells}, 1fr)`,
-    });
-
-    return board;
-  };
-
   this.addCell = function () {
-    const styles = this.styles.cell;
-    const cell = this.addElement(this.classes.cell);
+    const cell = this.addElement('cell');
 
     // styles
     Object.assign(cell.style, {
-      width: styles.size,
-      height: styles.size,
-      borderRadius: styles.borderRadius,
+      width: STYLES.cell.size,
+      height: STYLES.cell.size,
+      borderRadius: STYLES.cell.borderRadius,
     });
 
-    // add cell to cells list
+    // save cell
     this.cells.push(cell);
 
     return cell;
   };
 
   this.addCells = function () {
-    for (let i = 0; i < this.styles.board.cells ** 2; i++) {
-      this.addCell();
-    }
+    for (let i = 0; i < CELLS ** 2; i++) this.addCell();
   };
 
-  this.addElement = function (className, parent = this.elements.board) {
+  this.addElement = function (className, parent = this.board) {
     const element = document.createElement('div');
 
     // class name
@@ -86,43 +53,21 @@ function Board() {
   };
 
   // get current turn
-  this.getTurn = function (element = this.elements.board) {
+  this.getTurn = function (element = this.board) {
     return element.className.split(' ').at(-1);
   };
 
-  this.setTurn = function (turn = this.initTurn) {
-    this.elements.board.classList.add(turn);
+  this.setTurn = function (player) {
+    this.board.classList.add(player + '-turn');
   };
 
   // remove current board turn
   this.removeTurn = function () {
     const turn = this.getTurn();
 
-    this.elements.board.classList.remove(turn);
-  };
+    if (turn === 'board') return;
 
-  // toggle turn
-  this.toggleTurn = function () {
-    const boardTurns = Object.values(this.classes.boardTurns);
-
-    boardTurns.forEach((turn) => {
-      this.elements.board.classList.toggle(turn);
-    });
-  };
-
-  // get current cell turn
-  this.getCellTurn = function (element = this.elements.board) {
-    const boardTurn = element.className.split(' ').at(-1);
-    const cellTurn = boardTurn.split('-')[0];
-
-    return cellTurn;
-  };
-
-  this.setCellTurn = function (cell) {
-    const turn = this.getCellTurn();
-
-    // set turn to cell
-    this.setClassName(cell, turn);
+    this.board.classList.remove(turn);
   };
 }
 
