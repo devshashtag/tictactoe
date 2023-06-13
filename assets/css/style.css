@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
 
 *,
 *::before,
@@ -27,9 +27,6 @@
   --fg-cell-o: #4afad5;
   --fg-cell-win: #aefa4a;
 
-  --fg-cell-x-shadow: #fd7070;
-  --fg-cell-o-shadow: #62fddc;
-
   /* messages */
   --bg-overlay: #090e13aa;
   --bg-overlay-shadow: #0e151bee;
@@ -55,7 +52,7 @@ main.tic-tac-toe .container {
   flex-direction: column;
   gap: 1rem;
 
-  font-family: "Dancing Script", cursive;
+  font-family: 'Dancing Script', cursive;
   font-size: 1.6rem;
 
   background-color: var(--bg);
@@ -81,7 +78,7 @@ main.tic-tac-toe .board {
 /* cells */
 .board .cell {
   background-color: var(--bg-cell);
-  font-size: 1.5em;
+  font-size: 1em;
 }
 
 .board .cell::before {
@@ -110,29 +107,27 @@ main.tic-tac-toe .board {
 }
 
 .board .cell.x::before {
-  content: "x";
+  content: 'x';
   color: var(--fg-cell-x);
   text-shadow: 0 0 0.5rem var(--fg-cell-x);
-  box-shadow: 0 0 0.5em var(--fg-cell-x-shadow) inset;
 }
 
 .board .cell.o::before {
-  content: "o";
+  content: 'o';
   color: var(--fg-cell-o);
   text-shadow: 0 0 0.5rem var(--fg-cell-o);
-  box-shadow: 0 0 0.5em var(--fg-cell-o-shadow) inset;
 }
 
 .board.x-turn .cell:hover:not(.o):not(.x)::before {
   background-color: var(--bg-cell-hover);
-  content: "x";
+  content: 'x';
   color: var(--fg-cell-x);
   opacity: 0.5;
 }
 
 .board.o-turn .cell:hover:not(.o):not(.x)::before {
   background-color: var(--bg-cell-hover);
-  content: "o";
+  content: 'o';
   color: var(--fg-cell-o);
   opacity: 0.5;
 }
@@ -140,4 +135,51 @@ main.tic-tac-toe .board {
 .board .cell.win::before {
   font-size: 1.5em;
   border-radius: 1em;
+  animation: winner-x 2s infinite;
+}
+
+.board .cell.o.win::before {
+  animation: winner-o 2s infinite;
+}
+
+@keyframes winner-x {
+  0% {
+    border: 0.1em dashed var(--fg-cell-x);
+  }
+  20% {
+    border: 0.2em dashed var(--bg-cell);
+  }
+  40% {
+    border: 0.3em dashed var(--bg-cell);
+  }
+  60% {
+    border: 0.3em dashed var(--bg-cell);
+  }
+  80% {
+    border: 0.2em dashed var(--bg-cell);
+  }
+  100% {
+    border: 0.1em dashed var(--fg-cell-x);
+  }
+}
+
+@keyframes winner-o {
+  0% {
+    border: 0.1em dashed var(--fg-cell-o);
+  }
+  20% {
+    border: 0.2em dashed var(--bg-cell);
+  }
+  40% {
+    border: 0.3em dashed var(--bg-cell);
+  }
+  60% {
+    border: 0.3em dashed var(--bg-cell);
+  }
+  80% {
+    border: 0.2em dashed var(--bg-cell);
+  }
+  100% {
+    border: 0.1em dashed var(--fg-cell-o);
+  }
 }

@@ -1,4 +1,4 @@
-import { STYLES, CLASS_NAMES, INIT_TURN } from "./settings.js";
+import { STYLES, CLASS_NAMES, INIT_TURN, WIN_MATCH_CELLS } from './settings.js';
 
 function Board() {
   this.styles = STYLES;
@@ -9,7 +9,7 @@ function Board() {
 
   this.init = function () {
     // root
-    this.elements.root = document.querySelector("body > main");
+    this.elements.root = document.querySelector('body > main');
 
     // container
     this.elements.container = this.addContainer();
@@ -24,7 +24,7 @@ function Board() {
   this.addContainer = function (parent = this.elements.root) {
     const container = this.addElement(this.classes.container, parent);
 
-    container.textContent = "tic tac toe";
+    container.textContent = 'tic tac toe';
 
     return container;
   };
@@ -63,13 +63,13 @@ function Board() {
   };
 
   this.addCells = function () {
-    for (let i = 1; i <= this.styles.board.cells ** 2; i++) {
+    for (let i = 0; i < this.styles.board.cells ** 2; i++) {
       this.addCell();
     }
   };
 
   this.addElement = function (className, parent = this.elements.board) {
-    const element = document.createElement("div");
+    const element = document.createElement('div');
 
     // class name
     this.setClassName(element, className);
@@ -81,13 +81,13 @@ function Board() {
   };
 
   this.setClassName = function (element, className) {
-    if (typeof className == "string") element.classList.add(className);
+    if (typeof className == 'string') element.classList.add(className);
     else element.classList.add(...className);
   };
 
   // get current turn
   this.getTurn = function (element = this.elements.board) {
-    return element.className.split(" ").at(-1);
+    return element.className.split(' ').at(-1);
   };
 
   this.setTurn = function (turn = this.initTurn) {
@@ -101,8 +101,8 @@ function Board() {
     this.elements.board.classList.remove(turn);
   };
 
-  // toggle turns
-  this.toggleTurns = function () {
+  // toggle turn
+  this.toggleTurn = function () {
     const boardTurns = Object.values(this.classes.boardTurns);
 
     boardTurns.forEach((turn) => {
@@ -112,8 +112,8 @@ function Board() {
 
   // get current cell turn
   this.getCellTurn = function (element = this.elements.board) {
-    const boardTurn = element.className.split(" ").at(-1);
-    const cellTurn = boardTurn.split("-")[0];
+    const boardTurn = element.className.split(' ').at(-1);
+    const cellTurn = boardTurn.split('-')[0];
 
     return cellTurn;
   };
