@@ -1,6 +1,6 @@
 // responsive cell size
 
-export const CELLS = 10;
+export const CELLS = 9;
 
 const isMobile = window.matchMedia('(max-width: 600px)').matches;
 const CELL_SIZE = isMobile ? 8 - CELLS / 2 : 10 - CELLS / 2;
